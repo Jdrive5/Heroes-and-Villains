@@ -1,3 +1,4 @@
+from unicodedata import name
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,8 +10,14 @@ from supers import serializers
 @api_view(['GET', 'POST'])
 def super_list(request):
     if request.method == 'GET':
+        supers_type = request.query_params.get('supers_type')
         supers = Super.objects.all()
-        serializer = SuperSerializer(supers, many=True)
+        
+
+        if supers_type:
+            queryset = supers.filter(supers_types__type=supers_type)
+
+        serializer = SuperSerializer(queryset, many=True)
         return Response (serializer.data)
     elif request.method == 'POST':
         serializer = SuperSerializer(data=request.data)
@@ -30,4 +37,6 @@ def super_detail(request, pk):
         serializer.save()
     elif request.method == 'DELETE':
         super.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)   
+        return Response(status=status.HTTP_204_NO_CONTENT) 
+
+
